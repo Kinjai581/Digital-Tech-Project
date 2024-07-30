@@ -1,0 +1,89 @@
+// Online C# Editor for free
+// Write, Edit and Run your C# code using C# Online Compiler
+
+using System;
+
+public abstract class Basic_Room
+{
+    public int RoomType;
+    public int YCoord;
+    public int XCoord;
+    public bool Cleared;
+    
+    public virtual void Entering()
+    {
+        Console.WriteLine("Fung");
+    }
+    
+    public virtual void WhereAmI()
+    {
+        Console.WriteLine(this.YCoord);
+        Console.WriteLine(this.XCoord);
+    }
+}
+
+public class Empty_Room : Basic_Room
+{
+    public Empty_Room(int roomtype, int ycoord, int xcoord, bool cleared)
+    {
+        RoomType = roomtype;
+        YCoord = ycoord;
+        XCoord = xcoord;
+        Cleared = cleared;
+    }
+}
+
+public class Testing_Room : Basic_Room
+{
+    
+    
+    public Testing_Room(int roomtype, int ycoord, int xcoord, bool cleared)
+    {
+        RoomType = roomtype;
+        YCoord = ycoord;
+        XCoord = xcoord;
+        Cleared = cleared;
+    }
+    
+    public override void Entering()
+    {
+        if (this.Cleared == false)
+        {
+            Console.WriteLine("Hello I am a room! How are you?");
+            string Answer = Console.ReadLine();
+            if (Answer == "Fung")
+            {
+                Console.WriteLine("Yahoo!");
+                this.Cleared = true;
+            }
+            Console.WriteLine("Yippee!");
+        }
+        else
+        {
+            Console.WriteLine("You already cleared this room silly!");
+        }
+    }
+}
+
+
+public class Engine
+{
+    public static void Main(string[] args)
+    {
+        Console.WriteLine("What room are you testing?");
+        int RoomNumber = 1;
+        switch (RoomNumber)
+        {
+            case 0:
+                Empty_Room blung1 = new Empty_Room(1, 0, 0, false);
+                blung1.Entering();
+                break;
+            case 1:
+                Testing_Room blung2 = new Testing_Room(1, 0, 0, false);
+                blung2.Entering();
+                break;
+        }
+        
+    }
+}
+
