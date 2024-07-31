@@ -239,24 +239,162 @@ public class Game
     }
 }
 
-// Example usage
+public abstract class Basic_Room
+{
+    public int RoomType;
+    public int YCoord;
+    public int XCoord;
+    public bool Cleared;
+    
+    public virtual void Entering(Player x)
+    {
+        Console.WriteLine("Fung");
+    }
+    
+    public virtual void WhereAmI()
+    {
+        Console.WriteLine(this.YCoord);
+        Console.WriteLine(this.XCoord);
+    }
+}
+
+public class Locked_Room : Basic_Room
+{
+    public bool Unlocked;
+    public Item RequiredItem;
+    
+    public Locked_Room(int roomtype, int ycoord, int xcoord, bool cleared, bool unlocked, Item requireditem)
+    {
+        RoomType = roomtype;
+        YCoord = ycoord;
+        XCoord = xcoord;
+        Cleared = cleared;
+        Unlocked = unlocked;
+        RequiredItem = requireditem;
+    }
+    
+    public override void Entering(Player x)
+    {
+        foreach (Item i in x.Inventory.Items)
+        {
+            if (i == this.RequiredItem)
+            {
+                Console.WriteLine("Room unlocked!");
+                this.Unlocked = true;
+                break;
+            }
+            else
+            {
+                Console.WriteLine("Nuh");
+            }
+        }
+    }
+}
+
+public class Combat_Room : Basic_Room
+{
+    public Enemy Dummyobject;
+    public Item Loot;
+    
+    public Combat_Room(int roomtype, int ycoord, int xcoord, bool cleared, Enemy dummyobject, Item loot)
+    {
+        RoomType = roomtype;
+        YCoord = ycoord;
+        XCoord = xcoord;
+        Cleared = cleared;
+        Dummyobject = dummyobject;
+        Loot = loot;
+    }
+    
+    public override void Entering(Player x)
+    {
+        Console.WriteLine("Kill monster?");
+        string Action = Console.ReadLine();
+        if (Action == "yes")
+        {
+            this.Dummyobject.Health = 0;
+        }
+        if (this.Dummyobject.Health <= 0)
+        {
+            Console.WriteLine("Congrats you did something!");
+            x.Inventory.AddItem(this.Loot);
+        }
+    }
+}
+
+public class Testing_Room : Basic_Room
+{
+    public Weapon Loot;
+    public Item Otherloot;
+    
+    public Testing_Room(int roomtype, int ycoord, int xcoord, bool cleared, Weapon loot, Item otherloot)
+    {
+        RoomType = roomtype;
+        YCoord = ycoord;
+        XCoord = xcoord;
+        Cleared = cleared;
+        Loot = loot;
+        Otherloot = otherloot;
+    }
+    
+    public override void Entering(Player x)
+    {
+        if (this.Cleared == false)
+        {
+            Console.WriteLine("Hello I am a room! How are you?");
+            string Answer = Console.ReadLine();
+            if (Answer == "Fung")
+            {
+                Console.WriteLine("Yahoo!");
+                x.Inventory.AddWeapon(this.Loot);
+                x.Inventory.AddItem(this.Otherloot);
+                this.Cleared = true;
+            }
+            Console.WriteLine("Yippee!");
+        }
+        else
+        {
+            Console.WriteLine("You already cleared this room silly!");
+        }
+    }
+}
+
+
 class Program
 {
     static void Main(string[] args)
     {
         Player player = new Player("Beng", 100, 10, 5, null);
-
+        Enemy Shadow = new Enemy("The eminence himself", 1000, 1000, 1000);
+        Item keyobj = new Item("Not sus key...", "Key forged by fung for fung things.");
         Weapon sword = new Weapon("Sword", 15, 10);
+        Weapon Shadowslime = new Weapon("Shadow slime sword", 1000, 1000);
         player.Inventory.AddWeapon(sword);
         player.EquipWeapon("Sword");
-
+        Combat_Room blung1 = new Combat_Room(1, 0, 0, false, Shadow, keyobj);
+        Testing_Room blung2 = new Testing_Room(1, 0, 0, false, Shadowslime, keyobj);
+        Locked_Room blung3 = new Locked_Room(1, 0, 0, false, false, keyobj);
         Enemy goblin = new Enemy("Goblin", 30, 5, 2);
-
+        
+        blung1.Entering(player);
+        int RoomNumber = 2;
+        
+        switch (RoomNumber)
+        {
+            case 0:
+                blung1.Entering(player);
+                break;
+            case 1:
+                blung2.Entering(player);
+                break;
+            case 2:
+                blung3.Entering(player);
+                break;
+        }
+        
         player.Attack(goblin);
         player.Inventory.DisplayInventory();
 
         Console.WriteLine($"{goblin.Name} Health: {goblin.Health}");
     }
 }
-
-
