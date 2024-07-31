@@ -14,8 +14,6 @@ namespace Player_test
             { 1, 1, 0, 0 }
         }; // 0 -> the tile is not there, 1 -> a tile is present
 
-        //Work more on setting up the physical tile map for the rooms
-
         int tileSize = 100;
 
         public Form1()
@@ -26,6 +24,8 @@ namespace Player_test
             timer1.Start();
             lastPosition = pictureBox1.Location;
             this.KeyDown += new KeyEventHandler(Form1_KeyDown);
+            this.KeyUp += new KeyEventHandler(Form1_KeyUp);
+            this.Paint += new PaintEventHandler(Form1_Paint);
         }
 
         public void DrawTileMap(Graphics g)
@@ -45,23 +45,16 @@ namespace Player_test
                     }
 
                 }
-            } // Make the collision detector for these black rectangles
+            }
 
         }
 
-        private void pictureBox1_Click(object sender, EventArgs e)
-        {
-
-        }
+        
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
-            // Define the amount of pixels to move the PictureBox.
             int moveAmount = 7;
 
-
-
-
-            // Check which key was pressed and move the PictureBox accordingly.
+            // Check which key was pressed and move the playler sprite accordingly.
             switch (e.KeyCode)
             {
                 case Keys.W:
@@ -83,22 +76,16 @@ namespace Player_test
             }
         }
 
-        private void pictureBox2_Click(object sender, EventArgs e)
+        
+        private bool IsColliding(Rectangle rect1, Rectangle rect2)
         {
-
-        }
-
-        private bool IsColliding(PictureBox pb1, PictureBox pb2)
-        {
-            return pb1.Bounds.IntersectsWith(pb2.Bounds);
+            //return pb1.Bounds.IntersectsWith(pb2.Bounds); this is with picturebox arguments
+            return rect1.IntersectsWith(rect2);
         }
 
         private void timer1_Tick(object sender, EventArgs e)
         {
             lastPosition = pictureBox1.Location;
-
-
-
 
             if (moveUp && pictureBox1.Top > 0)
             {
@@ -117,11 +104,30 @@ namespace Player_test
                 pictureBox1.Left += speed;
             }
 
-            if (IsColliding(pictureBox1, pictureBox2))
+            // Check for collisions with the tiles
+            for (int y = 0; y < tileMap.GetLength(0); y++)
             {
-                //MessageBox.Show("The player collided");
+                for (int x = 0; x < tileMap.GetLength(1); x++)
+                {
+                    if (tileMap[y, x] == 1)
+                    {
+                        Rectangle tileRect = new Rectangle(x * tileSize, y * tileSize, tileSize, tileSize);
+                        if (IsColliding(pictureBox1.Bounds, tileRect))
+                        {
+                            pictureBox1.Location = lastPosition;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Check for collision with pictureBox2 (this could be an enemy i'm just testing things out first)
+            if (IsColliding(pictureBox1.Bounds, pictureBox2.Bounds))
+            {
                 pictureBox1.Location = lastPosition;
             }
+
+            Invalidate(); // Redraw the form to update the player and tile map
         }
 
         private void Form1_KeyUp(object sender, KeyEventArgs e)
