@@ -150,11 +150,11 @@ public class Player
         int damage;
         if (EquippedWeapon != null)
         {
-            damage = EquippedWeapon.AttackPower - enemy.Defence;
+            damage = EquippedWeapon.AttackPower - enemy.Defense;
         }
         else
         {
-            damage = AttackPower - enemy.Defence;
+            damage = AttackPower - enemy.Defense;
         }
 
         if (damage > 0)
