@@ -1,9 +1,10 @@
-﻿using System;
-    namespace Program
+﻿
+using System;
+    namespace Map_Stuff
     {
         public class Program1
         {
-            private static (int x, int y) Move(char[,] map, string direction, int player_x, int player_y){
+            private static (int x, int y) Move(char[,] map, string? direction, int player_x, int player_y){
                 // Check for the direction the player wants to move
                 if (direction == "up")
                 {
@@ -82,20 +83,6 @@
                     {
                         Console.WriteLine("Cannot move in that direction!");
                     }
-                }
-
-
-                if (map[player_y, player_x] == '#')
-                {
-                    Console.WriteLine("Normal room!");
-                }
-                else if (map[player_y, player_x] == 'W' || map[player_y, player_x] == 'X')
-                {
-                    Console.WriteLine("Start/End room!");
-                }
-                else
-                {
-                    Console.WriteLine("No room detected!");
                 }
 
                 return (player_x, player_y);
