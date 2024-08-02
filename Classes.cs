@@ -72,51 +72,51 @@ public class Item
     }
 }
 
-public class Weapon
+public abstract class Weapon
 {
-    public string Name { get; set; }
-    public int AttackPower { get; set; }
-    public int Durability { get; set; }
+    public string Name;
+    public int AttackPower;
+    public int Durability;
 
-    public Weapon(string name, int attackPower, int durability)
+    public virtual void Hit(Enemy x){
+        x.Health -= this.AttackPower;
+        Console.WriteLine("You did damage hopefully!");
+    }
+
+    public virtual void Use()
+    {
+        Durability--;
+    }
+
+    public virtual bool IsBroken()
+    {
+        return Durability <= 0;
+    }
+}
+
+public class Sword : Weapon
+{
+    public Sword(string name, int attackPower, int durability)
     {
         Name = name;
         AttackPower = attackPower;
         Durability = durability;
     }
     
-    public void Hit(Enemy x){
+    public override void Hit(Enemy x){
         x.Health -= this.AttackPower;
         Console.WriteLine("You did damage hopefully!");
     }
+}
 
-    public void Use()
-    {
-        Durability--;
-    }
-
-    public bool IsBroken()
-    {
-        return Durability <= 0;
-    }
-} // Use class inheritance if we want to add weapons
-
-public class Enemy
+public abstract class Enemy
 {
-    public string Name { get; set; }
-    public int Health { get; set; }
-    public int AttackPower { get; set; }
-    public int Defense { get; set; }
+    public string Name;
+    public int Health;
+    public int AttackPower;
+    public int Defense;
 
-    public Enemy(string name, int health, int attackPower, int defense)
-    {
-        Name = name;
-        Health = health;
-        AttackPower = attackPower;
-        Defense = defense;
-    }
-
-    public void Attack(Player x)
+    public virtual void Attack(Player x)
     {
         if (x.Defense >= this.AttackPower)
         {
@@ -128,11 +128,57 @@ public class Enemy
         }
     }
 
-    public bool IsAlive()
+    public virtual bool IsAlive()
     {
         return Health > 0;
     }
 } // Use class inheritance to make more enemies
+
+public class Goblin : Enemy
+{
+    public Goblin(string name, int health, int attackPower, int defense)
+    {
+        Name = name;
+        Health = health;
+        AttackPower = attackPower;
+        Defense = defense;
+    }
+
+    public override void Attack(Player x)
+    {
+        if (x.Defense >= this.AttackPower)
+        {
+            Console.WriteLine("Nuh uh no damage dealt to player.");
+        }
+        else
+        {
+            x.Health -= (this.AttackPower - x.Defense);
+        }
+    }
+}
+
+public class Eminence : Enemy
+{
+    public Eminence(string name, int health, int attackPower, int defense)
+    {
+        Name = name;
+        Health = health;
+        AttackPower = attackPower;
+        Defense = defense;
+    }
+
+    public virtual void Attack(Player x)
+    {
+        if (x.Defense >= this.AttackPower)
+        {
+            Console.WriteLine("Nuh uh no damage dealt to player.");
+        }
+        else
+        {
+            x.Health -= (this.AttackPower - x.Defense);
+        }
+    }
+}
 
 public class Player
 {
@@ -373,18 +419,18 @@ class Program
     static void Main(string[] args)
     {
         Player player = new Player("Beng", 100, 10, 5, null);
-        Enemy Shadow = new Enemy("The eminence himself", 10000, 10000, 10000);
+        Eminence Shadow = new Eminence("The eminence himself", 10000, 10000, 10000);
         Item keyobj = new Item("Not sus key...", "Key forged by fung for fung things.");
-        Weapon sword = new Weapon("Sword", 15, 10);
-        Weapon Shadowslime = new Weapon("Shadow slime sword", 1000, 1000);
+        Sword sword = new Sword("Sword", 15, 10);
+        Sword Shadowslime = new Sword("Shadow slime sword", 9999, 9999);
         player.Inventory.AddWeapon(sword);
         player.EquipWeapon("Sword");
         Combat_Room blung1 = new Combat_Room(1, 0, 0, false, Shadow, keyobj);
         Testing_Room blung2 = new Testing_Room(1, 0, 0, false, Shadowslime, keyobj);
         Locked_Room blung3 = new Locked_Room(1, 0, 0, false, false, keyobj);
-        Enemy goblin = new Enemy("Goblin", 30, 5, 10);
+        Goblin goblin = new Goblin("Goblin", 30, 5, 10);
         
-        /*int RoomNumber = 1;
+        int RoomNumber = 1;
         
         switch (RoomNumber)
         {
@@ -398,7 +444,6 @@ class Program
                 blung3.Entering(player);
                 break;
         }
-        */
         player.Attack(goblin);
         player.Inventory.DisplayInventory();
 
