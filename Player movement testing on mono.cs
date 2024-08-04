@@ -5,20 +5,19 @@ using System;
 
 namespace Player_test_on_mono
 {
-    // Update collisions
-
     public class Game1 : Game
     {
         int[,] tileMap = {
             { 1, 0, 0, 1, 0, 0, 1 },
             { 0, 0, 0, 1, 1, 1, 0 },
-            { 1, 1, 0, 0, 0, 0, 0 },
+            { 1, 0, 0, 0, 0, 0, 0 },
             { 0, 0, 1, 1, 1, 0, 0 },
             { 0, 1, 1, 0, 0, 1, 1 }
         }; // 0 -> the tile is not there, 1 -> a tile is present
         int tileSize = 90;
 
-        int speed = 10;
+        int Player_speed = 10;
+        int Enemy_speed = 2; // Adjusted speed for smoother movement
 
         Texture2D TileMap_texture;
         Texture2D Player_texture;
@@ -26,9 +25,6 @@ namespace Player_test_on_mono
 
         Texture2D Enemy_texture;
         Vector2 Enemy_position;
-
-        // Make the enemy box follow the player
-
 
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
@@ -42,8 +38,6 @@ namespace Player_test_on_mono
 
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
-
             base.Initialize();
         }
 
@@ -51,21 +45,17 @@ namespace Player_test_on_mono
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
-
             TileMap_texture = new Texture2D(GraphicsDevice, 1, 1);
             TileMap_texture.SetData(new[] { Color.Red });
 
             Player_texture = new Texture2D(GraphicsDevice, 1, 1);
             Player_texture.SetData(new[] { Color.Black });
 
-            Enemy_texture = new Texture2D (GraphicsDevice, 1, 1);
+            Enemy_texture = new Texture2D(GraphicsDevice, 1, 1);
             Enemy_texture.SetData(new[] { Color.Green });
 
-            Player_position = new Vector2(100,20);
-            Enemy_position = new Vector2 (100,100);
-
-
+            Player_position = new Vector2(100, 20);
+            Enemy_position = new Vector2(100, 100);
         }
 
         protected override void Update(GameTime gameTime)
@@ -73,30 +63,24 @@ namespace Player_test_on_mono
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
-            //KeyboardState previousKeyboardState;
             KeyboardState currentKeyboardState = Keyboard.GetState();
             Vector2 newPosition = Player_position;
-            Vector2 newPosition2 = Enemy_position;
-
-            
-            
 
             if (currentKeyboardState.IsKeyDown(Keys.W) || currentKeyboardState.IsKeyDown(Keys.Up))
             {
-                newPosition.Y -= speed;
+                newPosition.Y -= Player_speed;
             }
             if (currentKeyboardState.IsKeyDown(Keys.A) || currentKeyboardState.IsKeyDown(Keys.Left))
             {
-                newPosition.X -= speed;
+                newPosition.X -= Player_speed;
             }
             if (currentKeyboardState.IsKeyDown(Keys.S) || currentKeyboardState.IsKeyDown(Keys.Down))
             {
-                newPosition.Y += speed;
+                newPosition.Y += Player_speed;
             }
             if (currentKeyboardState.IsKeyDown(Keys.D) || currentKeyboardState.IsKeyDown(Keys.Right))
             {
-                newPosition.X += speed;
+                newPosition.X += Player_speed;
             }
 
             if (!IsColliding(newPosition) &&
@@ -107,12 +91,40 @@ namespace Player_test_on_mono
                 Player_position = newPosition;
             }
 
+            // Update enemy position to move towards the player
+            Vector2 enemyNewPosition = Enemy_position;
+
+            if (Player_position.X < Enemy_position.X)
+            {
+                enemyNewPosition.X -= Enemy_speed;
+            }
+            else if (Player_position.X > Enemy_position.X)
+            {
+                enemyNewPosition.X += Enemy_speed;
+            }
+
+            if (Player_position.Y < Enemy_position.Y)
+            {
+                enemyNewPosition.Y -= Enemy_speed;
+            }
+            else if (Player_position.Y > Enemy_position.Y)
+            {
+                enemyNewPosition.Y += Enemy_speed;
+            }
+
+            if (!IsColliding(enemyNewPosition) &&
+                !IsColliding(new Vector2(enemyNewPosition.X + tileSize - 1, enemyNewPosition.Y)) &&
+                !IsColliding(new Vector2(enemyNewPosition.X, enemyNewPosition.Y + tileSize - 1)) &&
+                !IsColliding(new Vector2(enemyNewPosition.X + tileSize - 1, enemyNewPosition.Y + tileSize - 1)))
+            {
+                Enemy_position = enemyNewPosition;
+            }
 
             base.Update(gameTime);
         }
 
         private bool IsColliding(Vector2 position)
-        { 
+        {
             int x = (int)(position.X / tileSize);
             int y = (int)(position.Y / tileSize);
 
@@ -122,33 +134,26 @@ namespace Player_test_on_mono
             }
 
             return tileMap[y, x] == 1;
-            
-            
-           
-            
         }
 
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO: Add your drawing code here
-
             _spriteBatch.Begin();
-            
-            int x, y;
-            for (y = 0; y < tileMap.GetLength(0); y++)
+
+            for (int y = 0; y < tileMap.GetLength(0); y++)
             {
-                for (x = 0; x < tileMap.GetLength(1); x++)
+                for (int x = 0; x < tileMap.GetLength(1); x++)
                 {
                     if (tileMap[y, x] == 1)
                     {
                         _spriteBatch.Draw(TileMap_texture, new Rectangle(x * tileSize, y * tileSize, tileSize, tileSize), Color.White);
                     }
-
                 }
             }
-            _spriteBatch.Draw(Player_texture, new Rectangle((int) Player_position.X, (int) Player_position.Y, tileSize, tileSize), Color.White);
+
+            _spriteBatch.Draw(Player_texture, new Rectangle((int)Player_position.X, (int)Player_position.Y, tileSize, tileSize), Color.White);
             _spriteBatch.Draw(Enemy_texture, new Rectangle((int)Enemy_position.X, (int)Enemy_position.Y, tileSize, tileSize), Color.Green);
 
             _spriteBatch.End();
