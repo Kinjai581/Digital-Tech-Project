@@ -1,10 +1,11 @@
-﻿
-using System;
-    namespace Map_Stuff
+﻿using System;
+using Iron_Heart;
+
+    namespace Iron_Heart
     {
         public class Program1
         {
-            private static (int x, int y) Move(char[,] map, string? direction, int player_x, int player_y){
+            public static (int x, int y) Move(char[,] map, string? direction, int player_x, int player_y){
                 // Check for the direction the player wants to move
                 if (direction == "up")
                 {
@@ -88,45 +89,5 @@ using System;
                 return (player_x, player_y);
             }
 
-            public static void Main()
-            {
-                Console.WriteLine("Hello, World!");
-                char[,] map1 = {
-                    
-                            {' ', ' ', ' ', ' ', ' ', 'W', ' ', ' ', ' ', ' '},
-
-                            {' ', ' ', ' ', ' ', '#', '#', ' ', ' ', ' ', ' '},
-
-                            {' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' '},
-
-                            {' ', ' ', ' ', ' ', '#', '#', '#', '#', ' ', ' '},
-
-                            {' ', ' ', '#', '#', '#', ' ', ' ', '#', ' ', ' '},
-
-                            {' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-
-                            {' ', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' '},
-
-                            {' ', ' ', '#', ' ', ' ', '#', ' ', '#', ' ', ' '},
-
-                            {' ', ' ', '#', '#', '#', '#', '#', '#', ' ', ' '},
-
-                            {' ', ' ', ' ', ' ', 'X', ' ', ' ', ' ', ' ', ' '},
-                            
-                            };
-                            
-
-                    char[,] currentMap = map1;
-                    int player_x = 4;
-                    int player_y = 9;
-                    string? direction = Console.ReadLine();
-                    while (direction != "") 
-                    {
-                        (int, int) coords_tuple = Move(currentMap, direction, player_x, player_y);
-                        player_x = coords_tuple.Item1;
-                        player_y = coords_tuple.Item2;
-                        direction = Console.ReadLine();
-                    }
-            }
+        }
     }
-}
