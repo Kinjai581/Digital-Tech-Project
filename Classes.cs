@@ -424,13 +424,23 @@ namespace Iron_Heart{
             Eminence Shadow = new Eminence("The eminence himself", 10000, 10000, 10000);
             Item keyobj = new Item("Not sus key...", "Key forged by fung for fung things.");
             Sword sword = new Sword("Sword", 15, 10);
+            Goblin goblin2 = new Goblin("Goblin", 30, 5, 10);
+            Goblin goblin3 = new Goblin("Goblin", 30, 5, 10);
+            Goblin goblin4 = new Goblin("Goblin", 30, 5, 10);
+            Goblin goblin5 = new Goblin("Goblin", 30, 5, 10);
+
             Sword Shadowslime = new Sword("Shadow slime sword", 9999, 9999);
             player.Inventory.AddWeapon(sword);
             player.EquipWeapon("Sword");
-            Combat_Room blung1 = new Combat_Room(1, 0, 0, false, Shadow, keyobj);
+
+            Combat_Room combat1 = new Combat_Room(1, 0, 0, false, Shadow, keyobj);
+            Combat_Room combat2 = new Combat_Room(1, 0, 0, false, goblin2, keyobj);
+            Combat_Room combat3 = new Combat_Room(1, 0, 0, false, goblin3, keyobj);
+
+
             Testing_Room blung2 = new Testing_Room(1, 0, 0, false, Shadowslime, keyobj);
             Locked_Room blung3 = new Locked_Room(1, 0, 0, false, false, keyobj);
-            Goblin goblin = new Goblin("Goblin", 30, 5, 10);
+            Goblin goblin1 = new Goblin("Goblin", 30, 5, 10);
             
             char[,] map1 = {
                     
@@ -455,7 +465,12 @@ namespace Iron_Heart{
                             {' ', ' ', ' ', ' ', 'X', ' ', ' ', ' ', ' ', ' '},
                             
                             };
+            
+
                             
+
+                    Random rnd = new Random();
+
 
                     char[,] currentMap = map1;
                     int player_x = 4;
@@ -468,25 +483,38 @@ namespace Iron_Heart{
                         player_y = coords_tuple.Item2;
                         direction = Console.ReadLine();
 
-                        int RoomNumber = 1;
+                        int RoomNumber = rnd.Next(0, 3);
             
                         switch (RoomNumber)
                         {
                             case 0:
-                                blung1.Entering(player);
+                                combat1.Entering(player);
+                                while (combat1.Dummyobject.Health > 0)
+                                {
+                                    player.Attack(combat1.Dummyobject);
+                                    Console.WriteLine($"{combat1.Dummyobject.Name} Health: {combat1.Dummyobject.Health}");
+                                }
                                 break;
+
                             case 1:
-                                blung2.Entering(player);
+                                combat2.Entering(player);
+                                while (combat2.Dummyobject.Health > 0)
+                                {
+                                    player.Attack(combat2.Dummyobject);
+                                    Console.WriteLine($"{combat2.Dummyobject.Name} Health: {combat2.Dummyobject.Health}");
+                                }
                                 break;
+
                             case 2:
-                                blung3.Entering(player);
+                                combat3.Entering(player);
+                                while (combat3.Dummyobject.Health > 0)
+                                {
+                                    player.Attack(combat3.Dummyobject);
+                                    Console.WriteLine($"{combat3.Dummyobject.Name} Health: {combat3.Dummyobject.Health}");
+                                }
                                 break;
                         }
-                        player.Attack(goblin);
-                        player.Inventory.DisplayInventory();
-
-                        Console.WriteLine($"{goblin.Name} Health: {goblin.Health}");
-
+                        //player.Inventory.DisplayInventory();
                     }
         }
     }

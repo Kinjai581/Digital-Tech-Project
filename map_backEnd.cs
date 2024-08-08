@@ -5,6 +5,24 @@ using Iron_Heart;
     {
         public class Program1
         {
+
+            /*
+            3 Trap
+            1 Chest
+            1 Mini boss
+            1 Boss
+            2 Powerful enemy rooms
+            1 Chance Room
+            2 Puzzle Rooms
+            1 Locked room
+            3 Combat rooms
+            2 Item
+            1 Start
+            1 End
+            */
+
+
+
             public static (int x, int y) Move(char[,] map, string? direction, int player_x, int player_y){
                 // Check for the direction the player wants to move
                 if (direction == "up")
