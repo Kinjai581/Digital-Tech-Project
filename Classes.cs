@@ -301,6 +301,7 @@ namespace Iron_Heart{
         public int YCoord;
         public int XCoord;
         public bool Cleared;
+        public string Image;
         
         public virtual void Entering(Player x)
         {
@@ -319,7 +320,7 @@ namespace Iron_Heart{
         public bool Unlocked;
         public Item RequiredItem;
         
-        public Locked_Room(int roomtype, int ycoord, int xcoord, bool cleared, bool unlocked, Item requireditem)
+        public Locked_Room(int roomtype, int ycoord, int xcoord, bool cleared, bool unlocked, Item requireditem, string image)
         {
             RoomType = roomtype;
             YCoord = ycoord;
@@ -327,6 +328,7 @@ namespace Iron_Heart{
             Cleared = cleared;
             Unlocked = unlocked;
             RequiredItem = requireditem;
+            Image = image;
         }
         
         public override void Entering(Player x)
@@ -352,7 +354,7 @@ namespace Iron_Heart{
         public Enemy Dummyobject;
         public Item Loot;
         
-        public Combat_Room(int roomtype, int ycoord, int xcoord, bool cleared, Enemy dummyobject, Item loot)
+        public Combat_Room(int roomtype, int ycoord, int xcoord, bool cleared, Enemy dummyobject, Item loot, string image)
         {
             RoomType = roomtype;
             YCoord = ycoord;
@@ -360,6 +362,7 @@ namespace Iron_Heart{
             Cleared = cleared;
             Dummyobject = dummyobject;
             Loot = loot;
+            Image = image;
         }
         
         public override void Entering(Player x)
@@ -383,7 +386,7 @@ namespace Iron_Heart{
         public Weapon Loot;
         public Item Otherloot;
         
-        public Testing_Room(int roomtype, int ycoord, int xcoord, bool cleared, Weapon loot, Item otherloot)
+        public Testing_Room(int roomtype, int ycoord, int xcoord, bool cleared, Weapon loot, Item otherloot, string image)
         {
             RoomType = roomtype;
             YCoord = ycoord;
@@ -391,6 +394,7 @@ namespace Iron_Heart{
             Cleared = cleared;
             Loot = loot;
             Otherloot = otherloot;
+            Image = image;
         }
         
         public override void Entering(Player x)
@@ -433,13 +437,13 @@ namespace Iron_Heart{
             player.Inventory.AddWeapon(sword);
             player.EquipWeapon("Sword");
 
-            Combat_Room combat1 = new Combat_Room(1, 0, 0, false, Shadow, keyobj);
-            Combat_Room combat2 = new Combat_Room(1, 0, 0, false, goblin2, keyobj);
-            Combat_Room combat3 = new Combat_Room(1, 0, 0, false, goblin3, keyobj);
+            Combat_Room combat1 = new Combat_Room(1, 0, 0, false, Shadow, keyobj, "");
+            Combat_Room combat2 = new Combat_Room(1, 0, 0, false, goblin2, keyobj, "");
+            Combat_Room combat3 = new Combat_Room(1, 0, 0, false, goblin3, keyobj, "");
 
 
-            Testing_Room blung2 = new Testing_Room(1, 0, 0, false, Shadowslime, keyobj);
-            Locked_Room blung3 = new Locked_Room(1, 0, 0, false, false, keyobj);
+            Testing_Room blung2 = new Testing_Room(1, 0, 0, false, Shadowslime, keyobj, "");
+            Locked_Room blung3 = new Locked_Room(1, 0, 0, false, false, keyobj, "");
             Goblin goblin1 = new Goblin("Goblin", 30, 5, 10);
             
             char[,] map1 = {
