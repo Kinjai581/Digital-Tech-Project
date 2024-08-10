@@ -1,9 +1,12 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGame_Files;
 using System;
+using System.Collections.Generic;
 
 // Fix the enemy getting stuck issue, if it is too troublesome leave it as it and explain that it is an intentional feature
+// Use the A * Pathfinder algorithm
 namespace Test
 {
     public class Game1 : Game
@@ -31,6 +34,8 @@ namespace Test
         Texture2D Enemy_texture;
         Vector2 Enemy_position;
         Vector2 Enemy_position_default;
+
+        int enemySize = 50;
 
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
@@ -107,7 +112,7 @@ namespace Test
             {
                 enemyNewPosition.X -= Enemy_speed;
             }
-            else if (Player_position.X > Enemy_position.X)
+            if (Player_position.X > Enemy_position.X)
             {
                 enemyNewPosition.X += Enemy_speed;
             }
@@ -116,15 +121,15 @@ namespace Test
             {
                 enemyNewPosition.Y -= Enemy_speed;
             }
-            else if (Player_position.Y > Enemy_position.Y)
+            if (Player_position.Y > Enemy_position.Y)
             {
                 enemyNewPosition.Y += Enemy_speed;
             }
 
             if (!IsColliding(enemyNewPosition) &&
-                !IsColliding(new Vector2(enemyNewPosition.X + tileSize - 1, enemyNewPosition.Y)) &&
-                !IsColliding(new Vector2(enemyNewPosition.X, enemyNewPosition.Y + tileSize - 1)) &&
-                !IsColliding(new Vector2(enemyNewPosition.X + tileSize - 1, enemyNewPosition.Y + tileSize - 1)))
+                !IsColliding(new Vector2(enemyNewPosition.X + enemySize - 1, enemyNewPosition.Y)) &&
+                !IsColliding(new Vector2(enemyNewPosition.X, enemyNewPosition.Y + enemySize - 1)) &&
+                !IsColliding(new Vector2(enemyNewPosition.X + enemySize - 1, enemyNewPosition.Y + enemySize - 1))) 
             {
                 Enemy_position = enemyNewPosition;
             } 
@@ -163,10 +168,14 @@ namespace Test
             }
 
             _spriteBatch.Draw(Player_texture, new Rectangle((int)Player_position.X, (int)Player_position.Y, tileSize, tileSize), Color.White);
-            _spriteBatch.Draw(Enemy_texture, new Rectangle((int)Enemy_position.X, (int)Enemy_position.Y, 40, 40), Color.Green);
+            _spriteBatch.Draw(Enemy_texture, new Rectangle((int)Enemy_position.X, (int)Enemy_position.Y, enemySize, enemySize), Color.Green);
 
             _spriteBatch.End();
             base.Draw(gameTime);
         }
     }
+
+    
+
+       
 }
