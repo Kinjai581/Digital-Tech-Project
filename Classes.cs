@@ -378,6 +378,34 @@ namespace Iron_Heart{
         }
     }
 
+    public class Boss_Room : Basic_Room
+    {
+        public Enemy Boss;
+
+        public Boss_Room(int roomtype, int ycoord, int xcoord, bool cleared, Enemy boss)
+        {
+            RoomType = roomtype;
+            YCoord = ycoord;
+            XCoord = xcoord;
+            Cleared = cleared;
+            Boss = boss;
+        }
+
+        public override void Entering(Player x)
+        {
+            Console.WriteLine("Attack boss?");
+            string Action = Console.ReadLine();
+            if (Action == "yes")
+            {
+                Boss.Health = 0;
+            }
+            if (Boss.Health <= 0)
+            {
+                Console.WriteLine("Congratulations! You beat the game!");
+            }
+        }
+    }
+
     public class Testing_Room : Basic_Room
     {
         public Weapon Loot;
@@ -432,10 +460,28 @@ namespace Iron_Heart{
             Sword Shadowslime = new Sword("Shadow slime sword", 9999, 9999);
             player.Inventory.AddWeapon(sword);
             player.EquipWeapon("Sword");
+       
+            /*
+            3 Trap
+            1 Chest
+            1 Mini boss
+            1 Boss
+            2 Powerful enemy rooms
+            1 Chance Room
+            2 Puzzle Rooms
+            1 Locked room
+            3 Combat rooms
+            2 Item
+            1 Start
+            1 End
+            */
 
             Combat_Room combat1 = new Combat_Room(1, 0, 0, false, Shadow, keyobj);
             Combat_Room combat2 = new Combat_Room(1, 0, 0, false, goblin2, keyobj);
             Combat_Room combat3 = new Combat_Room(1, 0, 0, false, goblin3, keyobj);
+
+            Boss_Room miniboss1 = new Boss_Room(1, 0, 0, false, goblin2);
+            Boss_Room boss1 = new Boss_Room(1, 1, 5, false, goblin2);
 
 
             Testing_Room blung2 = new Testing_Room(1, 0, 0, false, Shadowslime, keyobj);
