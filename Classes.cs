@@ -83,6 +83,7 @@ namespace Iron_Heart{
         public virtual void Hit(Enemy x){
             x.Health -= this.AttackPower;
             Console.WriteLine("You did damage hopefully!");
+            this.Use();
         }
 
         public virtual void Use()
@@ -203,22 +204,15 @@ namespace Iron_Heart{
 
         public void Attack(Enemy enemy)
         {
-            int damage;
             if (EquippedWeapon != null)
             {
-                damage = EquippedWeapon.AttackPower - enemy.Defense;
+                this.EquippedWeapon.Hit(enemy);
             }
             else
             {
-                damage = AttackPower - enemy.Defense;
-            }
-
-            if (damage > 0)
-            {
-                enemy.Health -= damage;
-                if (EquippedWeapon != null)
+                if (this.AttackPower > enemy.Defense)
                 {
-                    EquippedWeapon.Use();
+                    enemy.Health -= (this.AttackPower - enemy.Defense);
                 }
             }
         }
