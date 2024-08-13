@@ -1,5 +1,7 @@
 using System;
+using System.Timers;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Iron_Heart;
 
 namespace Iron_Heart{
@@ -49,7 +51,7 @@ namespace Iron_Heart{
             }
         }
 
-        public Weapon GetWeapon(string weaponName)
+        public Weapon? GetWeapon(string weaponName)
         {
             foreach (var weapon in Weapons)
             {
@@ -76,7 +78,7 @@ namespace Iron_Heart{
 
     public abstract class Weapon
     {
-        public string Name;
+        public string? Name;
         public int AttackPower;
         public int Durability;
 
@@ -113,7 +115,7 @@ namespace Iron_Heart{
 
     public abstract class Enemy
     {
-        public string Name;
+        public string? Name;
         public int Health;
         public int AttackPower;
         public int Defense;
@@ -169,7 +171,7 @@ namespace Iron_Heart{
             Defense = defense;
         }
 
-        public virtual void Attack(Player x)
+        public override void Attack(Player x)
         {
             if (x.Defense >= this.AttackPower)
             {
@@ -188,7 +190,7 @@ namespace Iron_Heart{
         public int Health { get; set; }
         public int AttackPower { get; set; }
         public int Defense { get; set; }
-        public Weapon EquippedWeapon { get; set; }
+        public Weapon? EquippedWeapon { get; set; }
         public Inventory Inventory { get; set; }
 
         public Player(string name, int health, int attackPower, int defense, Weapon equippedWeapon)
@@ -230,7 +232,7 @@ namespace Iron_Heart{
 
         public void EquipWeapon(string weaponName)
         {
-            Weapon weapon = Inventory.GetWeapon(weaponName);
+            Weapon? weapon = Inventory.GetWeapon(weaponName);
             if (weapon != null)
             {
                 EquippedWeapon = weapon;
@@ -301,7 +303,7 @@ namespace Iron_Heart{
         public int YCoord;
         public int XCoord;
         public bool Cleared;
-        public string Image;
+        public string? Image;
         
         public virtual void Entering(Player x)
         {
@@ -368,7 +370,7 @@ namespace Iron_Heart{
         public override void Entering(Player x)
         {
             Console.WriteLine("Kill monster?");
-            string Action = Console.ReadLine();
+            string? Action = Console.ReadLine();
             if (Action == "yes")
             {
                 this.Dummyobject.Health = 0;
@@ -397,7 +399,16 @@ namespace Iron_Heart{
         public override void Entering(Player x)
         {
             Console.WriteLine("Attack boss?");
-            string Action = Console.ReadLine();
+            string? Action = Console.ReadLine();
+            if (Action == "")
+            {
+                while (Action != "")
+                {
+                    Console.WriteLine("No input detected, try again.");
+                    Action = Console.ReadLine();
+                }
+            }
+
             if (Action == "yes")
             {
                 Boss.Health = 0;
@@ -430,7 +441,12 @@ namespace Iron_Heart{
             if (this.Cleared == false)
             {
                 Console.WriteLine("Hello I am a room! How are you?");
-                string Answer = Console.ReadLine();
+                string? Answer = Console.ReadLine();
+                while (Answer == "")
+                {
+                    Console.WriteLine("No input detected, try again.");
+                    Answer = Console.ReadLine();
+                }
                 if (Answer == "Fung")
                 {
                     Console.WriteLine("Yahoo!");
@@ -447,11 +463,29 @@ namespace Iron_Heart{
         }
     }
 
-
-    class Program
+    public class Program
     {
+
+        private static System.Timers.Timer testTimer;
+
+        private static void SetTimer()
+        {
+            testTimer = new System.Timers.Timer(2000);
+            testTimer.Elapsed += onTimedEvent;
+            testTimer.AutoReset = true;
+            testTimer.Enabled = true;
+        }
+
+        private static void onTimedEvent(object source, ElapsedEventArgs e)
+        {
+            Console.WriteLine($"2 seconds later...", e.SignalTime);
+        }
+
         static void Main(string[] args)
         {
+            Console.WriteLine("2 Seconds");
+            SetTimer();
+
             Player player = new Player("Beng", 100, 10, 5, null);
             Eminence Shadow = new Eminence("The eminence himself", 10000, 10000, 10000);
             Item keyobj = new Item("Not sus key...", "Key forged by fung for fung things.");
@@ -464,6 +498,8 @@ namespace Iron_Heart{
             Sword Shadowslime = new Sword("Shadow slime sword", 9999, 9999);
             player.Inventory.AddWeapon(sword);
             player.EquipWeapon("Sword");
+
+
        
             /*
             3 Trap
@@ -525,45 +561,54 @@ namespace Iron_Heart{
                     char[,] currentMap = map1;
                     int player_x = 4;
                     int player_y = 9;
+                    Console.WriteLine("Move in a direction: ");
                     string? direction = Console.ReadLine();
                     while (direction != "") 
                     {
-                        (int, int) coords_tuple = Program1.Move(currentMap, direction, player_x, player_y);
+                        (int, int) coords_tuple = (player_x, player_y);
+                        if (coords_tuple != Program1.Move(currentMap, direction, player_x, player_y))
+                        {
+                            
+                            int RoomNumber = rnd.Next(0, 3);
+                
+                            switch (RoomNumber)
+                            {
+                                case 0:
+                                    combat1.Entering(player);
+                                    while (combat1.Dummyobject.Health > 0)
+                                    {
+                                        player.Attack(combat1.Dummyobject);
+                                        Console.WriteLine($"{combat1.Dummyobject.Name} Health: {combat1.Dummyobject.Health}");
+                                    }
+                                    break;
+
+                                case 1:
+                                    combat2.Entering(player);
+                                    while (combat2.Dummyobject.Health > 0)
+                                    {
+                                        player.Attack(combat2.Dummyobject);
+                                        Console.WriteLine($"{combat2.Dummyobject.Name} Health: {combat2.Dummyobject.Health}");
+                                    }
+                                    break;
+
+                                case 2:
+                                    combat3.Entering(player);
+                                    while (combat3.Dummyobject.Health > 0)
+                                    {
+                                        player.Attack(combat3.Dummyobject);
+                                        Console.WriteLine($"{combat3.Dummyobject.Name} Health: {combat3.Dummyobject.Health}");
+                                    }
+                                    break;
+                            }
+                        }
+                        coords_tuple = Program1.Move(currentMap, direction, player_x, player_y);
                         player_x = coords_tuple.Item1;
                         player_y = coords_tuple.Item2;
+
+                        Console.WriteLine($"Your coordinates are ({player_x}, {player_y})");
+
+                        Console.WriteLine("Move in a direction: ");
                         direction = Console.ReadLine();
-
-                        int RoomNumber = rnd.Next(0, 3);
-            
-                        switch (RoomNumber)
-                        {
-                            case 0:
-                                combat1.Entering(player);
-                                while (combat1.Dummyobject.Health > 0)
-                                {
-                                    player.Attack(combat1.Dummyobject);
-                                    Console.WriteLine($"{combat1.Dummyobject.Name} Health: {combat1.Dummyobject.Health}");
-                                }
-                                break;
-
-                            case 1:
-                                combat2.Entering(player);
-                                while (combat2.Dummyobject.Health > 0)
-                                {
-                                    player.Attack(combat2.Dummyobject);
-                                    Console.WriteLine($"{combat2.Dummyobject.Name} Health: {combat2.Dummyobject.Health}");
-                                }
-                                break;
-
-                            case 2:
-                                combat3.Entering(player);
-                                while (combat3.Dummyobject.Health > 0)
-                                {
-                                    player.Attack(combat3.Dummyobject);
-                                    Console.WriteLine($"{combat3.Dummyobject.Name} Health: {combat3.Dummyobject.Health}");
-                                }
-                                break;
-                        }
                         //player.Inventory.DisplayInventory();
                     }
         }
