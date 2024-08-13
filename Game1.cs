@@ -7,27 +7,31 @@ using System.Collections.Generic;
 using System.Linq;
 
 //Pathfinding AI works, but is a bit choppy (enemy sometimes spazzes out) and the enemy can pass straight through a tile to find the player
-namespace Test
+//Need to add the game classes for the other windoes (rooms and battle menu)
+namespace MonoGame_Files
 {
 
 
     public class Game1 : Game
     {
         int[,] tileMap = {
-            { 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0 },
-            { 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0 },
-            { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 },
-            { 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0 },
-            { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 }
-        }; // 0 -> the tile is not there, 1 -> a tile is present
+            { 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0 },
+            { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0 },
+            { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0 },
+            { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0 },
+            { 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 },
+            { 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0 },
+            { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0 },
+            { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0 },
+            { 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0 },
+            { 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0 }
+        }; // 0 -> the tile is not there, 1 -> a tile is present. 12, 9
         int tileSize = 80;
 
-        int Player_speed = 4;
-        int Enemy_speed = 1; // Adjusted speed for smoother movement
+        int Player_speed = 3;
+        int Enemy_speed = 1; 
 
         Texture2D TileMap_texture;
         Texture2D Player_texture;
@@ -52,8 +56,8 @@ namespace Test
 
         protected override void Initialize()
         {
-            _graphics.PreferredBackBufferWidth = 900;
-            _graphics.PreferredBackBufferHeight = 800;
+            _graphics.PreferredBackBufferWidth = 880;
+            _graphics.PreferredBackBufferHeight = 880;
             _graphics.ApplyChanges();
 
             base.Initialize();
@@ -65,7 +69,7 @@ namespace Test
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             TileMap_texture = new Texture2D(GraphicsDevice, 1, 1);
-            TileMap_texture.SetData(new[] { Color.Red });
+            TileMap_texture.SetData(new[] { Color.Gray });
 
             Player_texture = new Texture2D(GraphicsDevice, 1, 1);
             Player_texture.SetData(new[] { Color.Black });
@@ -73,8 +77,8 @@ namespace Test
             Enemy_texture = new Texture2D(GraphicsDevice, 1, 1);
             Enemy_texture.SetData(new[] { Color.Green });
 
-            Player_position = new Vector2(100, 20);
-            Enemy_position = new Vector2(500, 190);
+            Player_position = new Vector2(400, 800);
+            Enemy_position = new Vector2(800, 190);
         }
 
         protected override void Update(GameTime gameTime)
@@ -259,7 +263,6 @@ namespace Test
             List<Vector2> path = new List<Vector2>();
             while (node != null)
             {
-                // Convert tile coordinates back to world coordinates
                 path.Add(new Vector2(node.Position.X * tileSize, node.Position.Y * tileSize));
                 node = node.Parent;
             }
@@ -276,4 +279,4 @@ namespace Test
     
 
        
-}
+
