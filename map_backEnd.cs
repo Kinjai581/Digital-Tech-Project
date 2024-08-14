@@ -11,7 +11,7 @@ using Iron_Heart;
                 if (direction == "up")
                 {
                     // Verify that the next space is within the bounds of the map
-                    if (player_y <= 9 && player_y >= 1)
+                    if (player_y <= 4 && player_y >= 1)
                     {   
                         // Make sure that the next space is actually a room
                         if (map[player_y - 1, player_x] == ' ')
@@ -33,7 +33,7 @@ using Iron_Heart;
 
                 else if (direction == "down")
                 {
-                    if (player_y >= 0 && player_y <= 8)
+                    if (player_y >= 0 && player_y <= 3)
                     {
                         if (map[player_y + 1, player_x] == ' ')
                         {
@@ -52,7 +52,7 @@ using Iron_Heart;
 
                 else if (direction == "left")
                 {
-                    if (player_x <= 9 && player_x >= 1)
+                    if (player_x <= 4 && player_x >= 1)
                     {
                         if (map[player_y, player_x - 1] == ' ')
                         {
@@ -70,7 +70,7 @@ using Iron_Heart;
                 }
                 else if (direction == "right")
                 {
-                    if (player_x >= 0 && player_x <= 8)
+                    if (player_x >= 0 && player_x <= 3)
                     {
                         if (map[player_y, player_x + 1] == ' ')
                         {
@@ -85,6 +85,10 @@ using Iron_Heart;
                     {
                         Console.WriteLine("Cannot move in that direction!");
                     }
+                }
+                else
+                {
+                    Console.WriteLine("Invalid direction!");
                 }
 
                 return (player_x, player_y);
