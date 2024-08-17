@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\praka\\MonoGame_Files\\MonoGame_Files\\MonoGame_Files.csproj": {}
+    "C:\\Users\\praka\\DigitalTechProject-Backup\\Digital-Tech-Project\\Game\\MonoGame_Files.csproj": {}
   },
   "projects": {
-    "C:\\Users\\praka\\MonoGame_Files\\MonoGame_Files\\MonoGame_Files.csproj": {
+    "C:\\Users\\praka\\DigitalTechProject-Backup\\Digital-Tech-Project\\Game\\MonoGame_Files.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\praka\\MonoGame_Files\\MonoGame_Files\\MonoGame_Files.csproj",
+        "projectUniqueName": "C:\\Users\\praka\\DigitalTechProject-Backup\\Digital-Tech-Project\\Game\\MonoGame_Files.csproj",
         "projectName": "MonoGame_Files",
-        "projectPath": "C:\\Users\\praka\\MonoGame_Files\\MonoGame_Files\\MonoGame_Files.csproj",
+        "projectPath": "C:\\Users\\praka\\DigitalTechProject-Backup\\Digital-Tech-Project\\Game\\MonoGame_Files.csproj",
         "packagesPath": "C:\\Users\\praka\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\praka\\MonoGame_Files\\MonoGame_Files\\obj\\",
+        "outputPath": "C:\\Users\\praka\\DigitalTechProject-Backup\\Digital-Tech-Project\\Game\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

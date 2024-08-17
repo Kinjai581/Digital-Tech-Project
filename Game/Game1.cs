@@ -6,8 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-// Fix the enemy getting stuck issue, if it is too troublesome leave it as it and explain that it is an intentional feature
-// Use the A * Pathfinder algorithm
+//Pathfinding AI works, but some refinements could be made
+// TODO: Enemies should have unique positions for each room they're in
+// TODO: The player should be able to move back and forth through the trigger zones without fail
+// TODO: Make the window dimensions equal to the tilemap grid size
+// TODO: The enemy should patrol throughout the map and not just one section unless there are multiple enemies in a room (multiple enemies walking about would be too difficult to complete game)
+// TODO: Need to add the window for the battle menu when the enemy touches the player
 namespace Test
 {
 
