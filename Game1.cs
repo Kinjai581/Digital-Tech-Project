@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-//Pathfinding AI works, but some refinements could be made
+//Pathfinding AI works, but the a star algorithm is not used. i need to incorporate it so that the enemy/s can find ways around to get to the user once it detects the player
 // TODO: Enemies should have unique positions for each room they're in
-// TODO: The player should be able to move back and forth through the trigger zones
+// TODO: The player should be able to move back and forth through the trigger zones without fail. When the player enters the trigger zone, they will spawn one row of tile in front of the trigger zone they just came from if they are on tiles 2 to 7 and they will spawn one row of tiles behind the trigger zone if the tiles are 11 to 16 (this is because the player is going back through the rooms)
 // TODO: Make the window dimensions equal to the tilemap grid size
 // TODO: The enemy should patrol throughout the map and not just one section unless there are multiple enemies in a room (multiple enemies walking about would be too difficult to complete game)
 // TODO: Need to add the window for the battle menu when the enemy touches the player
@@ -20,11 +20,11 @@ namespace MonoGame_Files
 
         private Dictionary<string, int[,]> roomTileMaps;
         private string currentRoom;
-        int[,] tileMap; // 0 -> the tile is not there, 1 -> a tile is present, 2 -> trigger zone to room
+        int[,] tileMap;
         int tileSize = 80;
 
         int Player_speed = 2;
-        int Enemy_speed = 1; 
+        int Enemy_speed = 1;
 
         Texture2D TileMap_texture;
         Texture2D Player_texture;
@@ -32,7 +32,7 @@ namespace MonoGame_Files
 
         Texture2D Enemy_texture;
         Vector2 Enemy_position;
-        
+
         private List<Vector2> patrolPoints;
         private int currentPatrolIndex;
         private bool isPatrolling = true;
@@ -45,9 +45,35 @@ namespace MonoGame_Files
         int playerSize = 65;
 
         private Direction direction;
+        private Vector2 previousPlayerPosition;
 
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
+
+        private readonly Dictionary<int, string> tileTriggerZones = new Dictionary<int, string>
+        {
+           { 2, "Room2" }, // Tile value 2 transitions to Room2
+           { 3, "Room3" }, // Tile value 3 transitions to Room3
+           { 4, "Room4" }, // Tile value 4 transitions to Room4
+           { 5, "Room5" }, // Tile value 5 transitions to Room5
+           { 6, "Room6" }, // Tile value 6 transitions to Room6
+           { 7, "Room7" }, // Tile value 7 transitions to Room7
+           { 11, "Room1" }, // Tile value 10 transitions back to Room1
+           { 12, "Room2" }, // Tile value 11 transitions back to Room2
+           { 13, "Room3" }, // Tile value 12 transitions back to Room3
+           { 14, "Room4" }, // Tile value 13 transitions back to Room4
+           { 15, "Room5" },  // Tile value 14 transitions back to Room5 
+           { 16, "Room6"} // Tile value 15 transitions back to Room6
+        };
+        string targetRoom;
+        public enum Direction // If required
+        {
+            None,
+            Up,
+            Down,
+            Right,
+            Left
+        }
 
         public Game1()
         {
@@ -58,14 +84,17 @@ namespace MonoGame_Files
 
         protected override void Initialize()
         {
-            _graphics.PreferredBackBufferWidth = 880;
-            _graphics.PreferredBackBufferHeight = 880;
-            _graphics.ApplyChanges();
+            
+
+
+
+
 
             roomTileMaps = new Dictionary<string, int[,]>();
-            // 0 --> no tile, 1 --> a tile is present, 2--> trigger zones to go to the next room
+            // 0 --> no tile, 1 --> a tile is present
             roomTileMaps.Add("Room1", new int[,] { // Starting Room
                 { 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1 },
+                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 }, // 2 is to go to room 2
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -74,44 +103,43 @@ namespace MonoGame_Files
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-                { 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1 },
-                { 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1 } 
+                { 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1 }
+
             });
 
-             roomTileMaps.Add("Room2", new int[,] {
-                { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+            roomTileMaps.Add("Room2", new int[,] { // Monster room 
+                { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 11 is to go back down to room 1
+                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 }, // 3 is to go to room 3
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2 },
-                { 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2 },
-                { 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2 },
+                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3 },
+                { 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 3 },
+                { 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 3 },
                 { 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-                { 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1 },
-                { 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1 }
+                { 1, 1, 1, 1, 11, 11, 11, 1, 1, 1, 1 },
+
             });
 
-            roomTileMaps.Add("Room3", new int[,] { 
-                { 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1 },
+            roomTileMaps.Add("Room3", new int[,] { // Chance room
+                { 1, 1, 1, 1, 4, 4, 4, 1, 1, 1, 1 },// 4 is to go up to room 4
+                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 }, // 11 is to go back to room 2
+                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+                { 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+                { 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+                { 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-                { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-                { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-                { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-                { 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1 },
                 { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
+
             });
 
-            roomTileMaps.Add("Room4", new int[,] {
-                { 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1 },
-                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+            roomTileMaps.Add("Room4", new int[,] { // Multiple monster room
+                { 1, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1 }, // 5 is to go up to room 5
+                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 }, // 12 is to go back down to room 3
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -121,11 +149,12 @@ namespace MonoGame_Files
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1 },
-                { 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1 }
+                { 1, 1, 1, 1, 13, 13, 13, 1, 1, 1, 1 }
             });
 
             roomTileMaps.Add("Room5", new int[,] {
-                { 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1 },
+                { 1, 1, 1, 1, 6, 6, 6, 1, 1, 1, 1 }, // 6 is to go up to room 6
+                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 }, // 13 is to go down to room 4
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -134,24 +163,23 @@ namespace MonoGame_Files
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-                { 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1 },
-                { 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1 }
+                { 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1 },
+                { 1, 1, 1, 1, 14, 14, 14, 1, 1, 1, 1 }
             });
 
-            roomTileMaps.Add("Room6", new int[,] {
-                { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+            roomTileMaps.Add("Room6", new int[,] { // Chest room
+                { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 7 is to go left to the boss/ending room
+                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 }, // 14 is to go down to room 5
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-                { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-                { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-                { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+                { 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+                { 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+                { 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1 },
-                { 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1 }
+                { 1, 1, 1, 1, 15, 15, 15, 1, 1, 1, 1 }
             });
 
             roomTileMaps.Add("Room7", new int[,] { //Boss and Ending Room
@@ -159,9 +187,9 @@ namespace MonoGame_Files
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2 },
-                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2 },
-                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2 },
+                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16 },
+                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16 },
+                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -179,17 +207,45 @@ namespace MonoGame_Files
                 new Vector2(400, 500),
                 new Vector2(100, 500)
             };
+            /*
+            private void InitializePatrolPoints()
+            {
+                patrolPoints.Clear();
+                int mapWidth = tileMap.GetLength(1) * tileSize;
+                int mapHeight = tileMap.GetLength(0) * tileSize;
+
+                patrolPoints.Add(new Vector2(100, 200));
+                patrolPoints.Add(new Vector2(mapWidth - 100, 200));
+                patrolPoints.Add(new Vector2(mapWidth - 100, mapHeight - 200));
+                patrolPoints.Add(new Vector2(100, mapHeight - 200));
+            }
+            */
 
             currentPatrolIndex = 0;
 
             roomEnemyPositions = new Dictionary<string, Vector2>
             {
-                { "Room2", new Vector2(100, 200) },
+                {"Room1", new Vector2() },
+                 { "Room2", new Vector2(100, 200) },
                 { "Room4", new Vector2(150, 250) },
-                // Add positions for other rooms, we'll need to discuss this
+
             };
 
-            Enemy_position = roomEnemyPositions[currentRoom];
+            //if (roomEnemyPositions.ContainsKey(currentRoom))
+            //{
+            //Enemy_position = roomEnemyPositions[currentRoom];
+            //}
+
+            previousPlayerPosition = Player_position;
+
+            
+            int mapWidth = tileMap.GetLength(1) * tileSize;
+            int mapHeight = tileMap.GetLength(0) * tileSize;
+
+            _graphics.PreferredBackBufferWidth = mapWidth;
+            _graphics.PreferredBackBufferHeight = mapHeight;
+            _graphics.ApplyChanges();
+            
 
             base.Initialize();
         }
@@ -215,7 +271,7 @@ namespace MonoGame_Files
         protected override void Update(GameTime gameTime)
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-            Exit();
+                Exit();
 
             // Player Movement
             KeyboardState currentKeyboardState = Keyboard.GetState();
@@ -244,9 +300,11 @@ namespace MonoGame_Files
                 Player_position = newPosition;
             }
 
+            
+
             // Enemy AI Logic
             float detectionRange = 200f; // range within which the enemy detects the player
-
+            Vector2 previousEnemyPosition = Enemy_position;
             if (Vector2.Distance(Player_position, Enemy_position) < detectionRange)
             {
                 // Player is within detection range, so chase the player
@@ -258,25 +316,10 @@ namespace MonoGame_Files
                 // Player is out of detection range, so patrol
                 isPatrolling = true;
 
-                if (patrolPoints.Count > 0)
-                {
-                    Vector2 targetPoint = patrolPoints[currentPatrolIndex];
-                    UpdateEnemyPosition(targetPoint);
-
-                    // To prevent overshooting the patrol point
-                    if (Vector2.Distance(Enemy_position, targetPoint) < Enemy_speed)
-                    {
-                        Enemy_position = targetPoint;
-                        currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.Count; // Move to the next patrol point
-                    }
-                }
+                Patrol();
             }
 
-            // Room transition logic
-            if (IsInTriggerZone(Player_position, out Direction direction))
-            {
-                HandleRoomTransition();
-            }
+            HandleRoomTransition();
 
             // Check for player touching the enemy to trigger battle menu
             if (IsPlayerTouchingEnemy())
@@ -284,6 +327,8 @@ namespace MonoGame_Files
                 // Trigger battle menu
                 // Example: ShowBattleMenu();
             }
+
+            
 
             base.Update(gameTime);
         }
@@ -301,7 +346,7 @@ namespace MonoGame_Files
                 {
                     if (x >= 0 && x < tileMap.GetLength(1) && y >= 0 && y < tileMap.GetLength(0))
                     {
-                        if (tileMap[y, x] == 1) // Assuming 1 indicates a solid tile
+                        if (tileMap[y, x] == 1) // 1 indicates a solid tile
                         {
                             return true;
                         }
@@ -309,6 +354,21 @@ namespace MonoGame_Files
                 }
             }
             return false;
+        }
+
+        private void Patrol()
+        {
+            if (patrolPoints.Count > 0)
+            {
+                Vector2 targetPoint = patrolPoints[currentPatrolIndex];
+                UpdateEnemyPosition(targetPoint);
+
+                if (Vector2.Distance(Enemy_position, targetPoint) < Enemy_speed)
+                {
+                    Enemy_position = targetPoint;
+                    currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.Count;
+                }
+            }
         }
 
         private void UpdateEnemyPosition(Vector2 targetPosition)
@@ -332,49 +392,36 @@ namespace MonoGame_Files
             }
         }
 
-        public enum Direction // If required
-        {
-            Up,
-            Down,
-            Right,
-            Left 
-        }
+
+        // Make the enemy follow AStar Pathfinding to find alternative paths to the player
 
 
         private bool IsInTriggerZone(Vector2 playerPosition, out Direction direction)
         {
             int x = (int)(playerPosition.X / tileSize);
             int y = (int)(playerPosition.Y / tileSize);
+            direction = Direction.None;
 
-            // Ensure coordinates are within the map bounds
             if (x >= 0 && x < tileMap.GetLength(1) && y >= 0 && y < tileMap.GetLength(0))
             {
-                if (tileMap[y, x] == 2)
+                int tileValue = tileMap[y, x];
+
+                if (tileTriggerZones.ContainsKey(tileValue))
                 {
-                    if (y == 0)
+                    // Determine the direction based on tile value (e.g., 2 for Room2, 11 for Room1)
+                    if (tileValue >= 2 && tileValue <= 7)
                     {
                         direction = Direction.Up;
-                        return true;
                     }
-                    else if (y == tileMap.GetLength(0) - 1)
+                    else if (tileValue >= 11 && tileValue <= 16)
                     {
                         direction = Direction.Down;
-                        return true;
                     }
-                    else if (x == 0)
-                    {
-                        direction = Direction.Left;
-                        return true;
-                    }
-                    else if (x == tileMap.GetLength(1) - 1)
-                    {
-                        direction = Direction.Right;
-                        return true;
-                    }
+
+                    return true;
                 }
             }
 
-            direction = default;
             return false;
         }
 
@@ -386,66 +433,113 @@ namespace MonoGame_Files
             return playerRect.Intersects(enemyRect); // triggers battle menu
         }
 
-       private void HandleRoomTransition()
-        { // Will need to map out the rooms properly in order to do this
+        private int GetTileValueAtPosition(Vector2 playerPosition)
+        {
+            int x = (int)(playerPosition.X / tileSize);
+            int y = (int)(playerPosition.Y / tileSize);
+
+            if (x >= 0 && x < tileMap.GetLength(1) && y >= 0 && y < tileMap.GetLength(0))
+            {
+                return tileMap[y, x];
+            }
+            return 0;
+        }
+
+
+
+        private void HandleRoomTransition()
+        {
+            // Check if the player is in a trigger zone
             if (IsInTriggerZone(Player_position, out Direction direction))
             {
-                switch (currentRoom)
+                // Get the tile value at the player's position
+                int tileValue = GetTileValueAtPosition(Player_position);
+
+                if (tileTriggerZones.TryGetValue(tileValue, out string targetRoomName))
                 {
-                    case "Room1":
-                        if (direction == Direction.Up)
-                        {
-                            LoadNewRoom(Direction.Up, "Room2");
-                        }
-                        break;
-
-                    case "Room2":
-                        if (direction == Direction.Down)
-                        {
-                            LoadNewRoom(Direction.Down, "Room1");
-                        }
-                        else if (direction == Direction.Right)
-                        {
-                            LoadNewRoom(Direction.Up, "Room3");
-                        }
-                        break;
-
-                    case "Room3":
-                        if (direction == Direction.Down)
-                        {
-                            LoadNewRoom(Direction.Down, "Room2");
-                        }
-                        else if (direction == Direction.Up)
-                        {
-                            LoadNewRoom(Direction.Up, "Room4");
-                        }
-                        break;
-
-                    case "Room4":
-                        if (direction == Direction.Left)
-                        {
-                            LoadNewRoom(Direction.Left, "Room5");
-                        }
-                        else if (direction == Direction.Right)
-                        {
-                            LoadNewRoom(Direction.Right, "Room6");
-                        }
-                        break;
-
-                    case "Room5":
-
-                        break;
-
-                    case "Room6":
-                        break;
-
-                    case "Room7":
-                        break;
-                    // Add additional room transitions here based on your design
-                    // Make sure to handle the new rooms accordingly
+                    if (targetRoomName != currentRoom)
+                    {
+                        LoadNewRoom(direction, targetRoomName);
+                    }
                 }
             }
+
         }
+
+        /*
+        private void CalculateNewPlayerPosition(Direction direction, string newRoomName)
+        {
+            // Get the trigger zone position in the current room
+            Vector2 triggerTilePosition = FindTriggerZonePosition(currentRoom);
+
+            // If the trigger zone position is not found, use a fallback position
+            if (triggerTilePosition == Vector2.Zero)
+            {
+                triggerTilePosition = new Vector2(0, 0); // or some default position
+            }
+
+            // Calculate the new player position based on direction and trigger zone value
+            switch (direction)
+            {
+                case Direction.Up:
+                    Player_position = new Vector2(triggerTilePosition.X, triggerTilePosition.Y - tileSize);
+                    break;
+                case Direction.Down:
+                    Player_position = new Vector2(triggerTilePosition.X, triggerTilePosition.Y + tileSize);
+                    break;
+                case Direction.Left:
+                    Player_position = new Vector2(triggerTilePosition.X - tileSize, triggerTilePosition.Y);
+                    break;
+                case Direction.Right:
+                    Player_position = new Vector2(triggerTilePosition.X + tileSize, triggerTilePosition.Y);
+                    break;
+                default:
+                    Player_position = triggerTilePosition; // Fallback position
+                    break;
+            }
+
+            // Adjust the player's position based on the trigger zone tile value
+            int triggerZoneValue = tileTriggerZones.FirstOrDefault(t => t.Value == currentRoom).Key;
+
+            if (triggerZoneValue >= 2 && triggerZoneValue <= 7)
+            {
+                // Spawn in front of the trigger zone
+                switch (direction)
+                {
+                    case Direction.Up:
+                        Player_position.Y -= tileSize; // Move player up (in front of trigger zone)
+                        break;
+                    case Direction.Down:
+                        Player_position.Y += tileSize; // Move player down (in front of trigger zone)
+                        break;
+                    case Direction.Left:
+                        Player_position.X -= tileSize; // Move player left (in front of trigger zone)
+                        break;
+                    case Direction.Right:
+                        Player_position.X += tileSize; // Move player right (in front of trigger zone)
+                        break;
+                }
+            }
+            else if (triggerZoneValue >= 11 && triggerZoneValue <= 16)
+            {
+                // Spawn behind the trigger zone
+                switch (direction)
+                {
+                    case Direction.Up:
+                        Player_position.Y += tileSize; // Move player down (behind trigger zone)
+                        break;
+                    case Direction.Down:
+                        Player_position.Y -= tileSize; // Move player up (behind trigger zone)
+                        break;
+                    case Direction.Left:
+                        Player_position.X += tileSize; // Move player right (behind trigger zone)
+                        break;
+                    case Direction.Right:
+                        Player_position.X -= tileSize; // Move player left (behind trigger zone)
+                        break;
+                }
+            }
+        }*/
 
         private void LoadNewRoom(Direction direction, string newRoomName)
         {
@@ -454,32 +548,98 @@ namespace MonoGame_Files
                 tileMap = roomTileMaps[newRoomName];
                 currentRoom = newRoomName;
 
-                // Adjust player position based on direction of transition
-                switch (direction)
+                // Adjust player position based on direction
+                Vector2 newSpawnPosition = GetValidSpawnPosition(direction);
+
+                if (newSpawnPosition != Vector2.Zero)
                 {
-                    case Direction.Up:
-                        Player_position = new Vector2(Player_position.X, tileMap.GetLength(0) * tileSize - playerSize);
-                        break;
-                    case Direction.Down:
-                        Player_position = new Vector2(Player_position.X, 0);
-                        break;
-                    case Direction.Left:
-                        Player_position = new Vector2(tileMap.GetLength(1) * tileSize - playerSize, Player_position.Y);
-                        break;
-                    case Direction.Right:
-                        Player_position = new Vector2(0, Player_position.Y);
-                        break;
+                    Player_position = newSpawnPosition;
                 }
 
-                // Adjust enemy position for the new room (customize as needed)
-                Enemy_position = new Vector2(100, 190); // Example position, adjust accordingly
+                // Reset other variables related to the room, like enemy positions
+                if (roomEnemyPositions.ContainsKey(newRoomName))
+                {
+                    Enemy_position = roomEnemyPositions[newRoomName];
+                }
+
+                // Optionally adjust the window size to fit the new tilemap
+                int mapWidth = tileMap.GetLength(1) * tileSize;
+                int mapHeight = tileMap.GetLength(0) * tileSize;
+                _graphics.PreferredBackBufferWidth = mapWidth;
+                _graphics.PreferredBackBufferHeight = mapHeight;
+                _graphics.ApplyChanges();
+            }
+        }
+
+        private Vector2 GetValidSpawnPosition(Direction direction)
+        {
+            // Default spawn position in case we can't find a valid one
+            Vector2 spawnPosition = Vector2.Zero;
+
+            // Get the position of the trigger zone tile
+            int triggerTileX = (int)(Player_position.X / tileSize);
+            int triggerTileY = (int)(Player_position.Y / tileSize);
+
+            // Adjust spawn position based on direction
+            switch (direction)
+            {
+                case Direction.Up:
+                    spawnPosition = new Vector2(triggerTileX * tileSize, (triggerTileY - 1) * tileSize);
+                    break;
+                case Direction.Down:
+                    spawnPosition = new Vector2(triggerTileX * tileSize, (triggerTileY + 1) * tileSize);
+                    break;
+                    // Add cases for Left and Right if needed
+            }
+
+            // Ensure spawn position is within bounds and not on a solid tile
+            if (IsWithinBounds(spawnPosition) && !IsSolidTile(spawnPosition))
+            {
+                return spawnPosition;
             }
             else
             {
-                Console.WriteLine($"Room {newRoomName} does not exist!");
+                // Return a fallback position if the calculated position is invalid
+                return FindFallbackSpawnPosition();
             }
         }
-        
+
+        private bool IsWithinBounds(Vector2 position)
+        {
+            int x = (int)(position.X / tileSize);
+            int y = (int)(position.Y / tileSize);
+            return x >= 0 && x < tileMap.GetLength(1) && y >= 0 && y < tileMap.GetLength(0);
+        }
+
+        private bool IsSolidTile(Vector2 position)
+        {
+            int x = (int)(position.X / tileSize);
+            int y = (int)(position.Y / tileSize);
+            return tileMap[y, x] == 1; 
+        }
+
+        private Vector2 FindFallbackSpawnPosition()
+        {
+            // This method finds a fallback spawn position that is guaranteed to be valid
+            for (int y = 0; y < tileMap.GetLength(0); y++)
+            {
+                for (int x = 0; x < tileMap.GetLength(1); x++)
+                {
+                    Vector2 position = new Vector2(x * tileSize, y * tileSize);
+                    if (!IsSolidTile(position))
+                    {
+                        return position;
+                    }
+                }
+            }
+
+            // If no valid position found, return a default position
+            return new Vector2(0, 0);
+        }
+
+
+
+
 
         protected override void Draw(GameTime gameTime)
         {
@@ -496,15 +656,15 @@ namespace MonoGame_Files
                         _spriteBatch.Draw(TileMap_texture, new Rectangle(x * tileSize, y * tileSize, tileSize, tileSize), Color.White);
                     }
 
-                    else if (tileMap[y, x] == 2)
+                    else if (tileMap[y, x] >= 2 && tileMap[y, x] <= 16)
                     {
-                        _spriteBatch.Draw(TileMap_texture, new Rectangle(x * tileSize, y * tileSize, tileSize, tileSize), Color.Red);
+                        _spriteBatch.Draw(TileMap_texture, new Rectangle(x * tileSize, y * tileSize, tileSize, tileSize), Color.LightGoldenrodYellow);
                     }
 
                     // Optional: Draw tile boundaries for debugging
                     //if (tileMap[y, x] == 1)
                     //{
-                       // _spriteBatch.Draw(TileMap_texture, new Rectangle(x * tileSize, y * tileSize, tileSize, tileSize), Color.Red * 0.5f);
+                    // _spriteBatch.Draw(TileMap_texture, new Rectangle(x * tileSize, y * tileSize, tileSize, tileSize), Color.Red * 0.5f);
                     //}
                 }
             }
@@ -512,7 +672,7 @@ namespace MonoGame_Files
             _spriteBatch.Draw(Player_texture, new Rectangle((int)Player_position.X, (int)Player_position.Y, playerSize, playerSize), Color.White); // Player dimensions
 
             // Ensure the enemy is drawn correctly based on the room
-            if (currentRoom != "Room1") // Add or statements for rooms without any enemies
+            if (currentRoom == "Room2" || currentRoom == "Room4") // Add or statements for rooms without any enemies
             {
                 _spriteBatch.Draw(Enemy_texture, new Rectangle((int)Enemy_position.X, (int)Enemy_position.Y, enemySize, enemySize), Color.Green); // Enemy dimensions
             }
@@ -521,6 +681,7 @@ namespace MonoGame_Files
             base.Draw(gameTime);
         }
 
+        // Get the A Star working so that the enemy can go around the tiles to reach the player
         private List<Vector2> AStar(Vector2 startWorld, Vector2 goalWorld)
         {
             Vector2 start = new Vector2((int)(startWorld.X / tileSize), (int)(startWorld.Y / tileSize));
@@ -599,9 +760,9 @@ namespace MonoGame_Files
         }
     }
 
-    
-    
-       
+
+
+
 }
 
     
