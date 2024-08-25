@@ -5,10 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-//Pathfinding AI works, but the a star algorithm is not used. i need to incorporate it so that the enemy/s can find ways around to get to the user once it detects the player
+//Pathfinding AI works, but the a star algorithm is not used. i need to incorporate it so that the enemy/s can find ways around to get to the user once it detects the player. Make A Star pass in the tilemap so that the enemy can find a path around to get to the player
 // TODO: Enemies should have unique positions for each room they're in
 // TODO: The player should be able to move back and forth through the trigger zones without fail. When the player enters the trigger zone, they will spawn one row of tile in front of the trigger zone they just came from if they are on tiles 2 to 7 and they will spawn one row of tiles behind the trigger zone if the tiles are 11 to 16 (this is because the player is going back through the rooms)
-// TODO: Make the window dimensions equal to the tilemap grid size
 // TODO: The enemy should patrol throughout the map and not just one section unless there are multiple enemies in a room (multiple enemies walking about would be too difficult to complete game)
 // TODO: Need to add the window for the battle menu when the enemy touches the player
 namespace MonoGame_Files
